@@ -8,37 +8,43 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import restaurants from "../data/restaurants";
+import { useNavigation } from "@react-navigation/native";
+import { useQuery } from "@tanstack/react-query";
+import { getResturants } from "../../../api/items";
 
 const RestaurantList = () => {
-  // Handle click on a restaurant
-  const handleRestaurantClick = (restaurant) => {
-    Alert.alert("Restaurant Selected", `You selected ${restaurant.name}`);
-  };
-
-  // Render a single restaurant card
+  const navigation = useNavigation();
   const renderRestaurant = ({ item }) => (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => handleRestaurantClick(item)}
+      onPress={() => navigation.navigate("Restaurant", { restaurant: item })}
     >
       <Image source={{ uri: item.image }} style={styles.image} />
       <View style={styles.infoContainer}>
         <Text style={styles.name}>{item.name}</Text>
         <Text style={styles.details}>
-          ⭐ {item.rating} | {item.deliveryTime}
+          ⭐ {item.rating} | 🕒 {item.deliveryTime}
         </Text>
       </View>
     </TouchableOpacity>
   );
+  const { data: restaurants, isLoading } = useQuery({
+    queryKey: ["resturants"],
+    queryFn: getResturants,
+  });
+
+  if (isLoading) {
+    return <Text>Loading...</Text>;
+  }
 
   return (
     <View style={styles.container}>
       <FlatList
         data={restaurants}
         renderItem={renderRestaurant}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item._id.toString()}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.listContainer}
       />
     </View>
   );
@@ -50,9 +56,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 10,
   },
+  listContainer: {
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+  },
   card: {
-    flexDirection: "row",
-    backgroundColor: "#f8f8f8",
+    flex: 1,
+    backgroundColor: "#F8F1E1", // Light beige for cards
     borderRadius: 10,
     marginBottom: 15,
     overflow: "hidden",
@@ -63,29 +73,24 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
   },
   image: {
-    width: 100,
-    height: 100,
+    width: "100%",
+    height: 150,
     borderRadius: 10,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderTopLeftRadius: 40,
-    borderBottomLeftRadius: 10,
-    borderColor: "#D00A12",
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
   },
   infoContainer: {
-    flex: 1,
     padding: 10,
-    justifyContent: "center",
   },
   name: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#333",
+    color: "#7A403E", // Primary color for text
+    marginBottom: 5,
   },
   details: {
     fontSize: 14,
-    color: "#555",
-    marginTop: 5,
+    color: "#9F2B00", // Accent color for details text
   },
 });
 
